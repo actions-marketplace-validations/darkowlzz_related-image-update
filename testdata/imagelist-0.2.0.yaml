@@ -1,0 +1,8 @@
+- name: RELATED_IMAGE_MY_APP
+  value: registry.example.com/example/my-app:v0.2.0
+- name: RELATED_IMAGE_SIDECAR
+  value: registry.example.com/example/sidecar:v0.2.0
+- name: RELATED_IMAGE_HELPER_X
+  value: registry.example.com/example/helper-x:v1.0.1
+- name: RELATED_IMAGE_SCHEDULER
+  value: registry.example.com/example/scheduler:v1.2.0
