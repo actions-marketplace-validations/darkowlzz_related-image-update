@@ -61,6 +61,8 @@ KIND=$(yq r $TARGET_FILE kind)
 if [ "$KIND" == "ClusterServiceVersion" ]; then
 	echo "Target file identified as a ClusterServiceVersion config."
 
+	# TODO: Check the number of deployments before failing. In case of a
+	# single deployment, assign it as TARGET_DEPLOYMENT_NAME.
 	if [ -z "$TARGET_DEPLOYMENT_NAME" ]; then
 		echo "Error: TARGET_DEPLOYMENT_NAME must be set for a CSV file"
 		exit 1
