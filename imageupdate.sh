@@ -90,19 +90,18 @@ if [ "$KIND" == "ClusterServiceVersion" ]; then
 elif [ "$KIND" == "Deployment" ]; then
 	echo "Target file identified as a Deployment config."
 else
-	echo "Error: Unknown target config file. Must be Deployment or a
-	ClusterServiceVersion config"
+	echo "Error: Unknown target config file. Must be Deployment or a ClusterServiceVersion config"
 	exit 1
 fi
 
-# Get the target container from deployment.
+# Get the path to containers.
 if [ -z $DEPLOYMENTS_PATH ]; then
 	CONTAINERS_PATH="spec.template.spec.containers"
 else
 	CONTAINERS_PATH="$DEPLOYMENTS_PATH[$DEPLOYMENT_INDEX].spec.template.spec.containers"
 fi
 
-# CONTAINERS_PATH="$DEPLOYMENTS_PATH[$DEPLOYMENT_INDEX].spec.template.spec.containers"
+# Get the target container.
 containers=$(yq r $TARGET_FILE $CONTAINERS_PATH --length)
 echo "Found $containers containers"
 TARGET_CONTAINER_FOUND=false
