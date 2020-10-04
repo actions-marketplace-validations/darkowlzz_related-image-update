@@ -35,6 +35,21 @@ set -e
 
 RELATED_IMAGE_PREFIX="RELATED_IMAGE"
 
+if [ -z "$IMAGE_LIST_FILE" ]; then
+	echo "Error: IMAGE_LIST_FILE must be set"
+	exit 1
+fi
+
+if [ -z "$TARGET_FILE" ]; then
+	echo "Error: TARGET_FILE must be set"
+	exit 1
+fi
+
+if [ -z "$TARGET_CONTAINER_NAME" ]; then
+	echo "Error: TARGET_CONTAINER_NAME must be set"
+	exit 1
+fi
+
 # Read imagelist length.
 TOTAL_IMAGES=$(yq r $IMAGE_LIST_FILE --length)
 
