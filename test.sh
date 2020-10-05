@@ -130,6 +130,10 @@ test_deployment_update_with_env_vars () {
 	rm $TEST_DEPLOYMENT
 }
 
+# Install yq.
+make yq
+sudo cp bin/yq /usr/local/bin
+
 # Run tests.
 test_csv_update_no_env_vars
 test_csv_update_with_env_vars
