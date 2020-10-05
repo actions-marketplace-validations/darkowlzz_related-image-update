@@ -1,0 +1,28 @@
+name: Publish Image
+
+on:
+  workflow_dispatch:
+    # Enable manual trigger of this action.
+    inputs:
+      imageTag:
+        description: Container image tag.
+        default: test
+        required: true
+
+jobs:
+  publish-image:
+    runs-on: ubuntu-latest
+    name: Publish container image
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Login to container registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }}
+      - name: Build container image
+        run: make docker-build IMG_TAG=${{ github.event.inputs.imageTag }}
+      - name: Push container image
+        run: docker push ghcr.io/darkowlzz/related-image-update:${{ github.event.inputs.imageTag }}
