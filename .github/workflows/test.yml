@@ -1,0 +1,12 @@
+name: Test
+
+on: [workflow_dispatch, push, pull_request]
+
+jobs:
+  test:
+    name: related image update test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: run test.sh
+        run: ./test.sh
