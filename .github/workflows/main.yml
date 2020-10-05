@@ -1,0 +1,17 @@
+name: Action in workflow
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  action_in_workflow:
+    runs-on: ubuntu-latest
+    name: Run action in workflow
+    steps:
+    - uses: actions/checkout@v2
+    - name: related-image-update action
+      uses: ./ # Uses the action in the root directory.
+      with:
+        imageListFile: testdata/imagelist-0.2.0.yaml
+        targetFile: testdata/bundle-existing-env-vars/manifests/memcached-operator.clusterserviceversion.yaml
+        deploymentName: memcached-operator-controller-manager
+        containerName: manager

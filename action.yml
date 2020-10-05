@@ -1,0 +1,26 @@
+name: 'related-image-update'
+description: 'Update related image env vars in operator Deployment and CSVs based on an image list.'
+branding:
+  icon: image
+  color: red
+inputs:
+  imageListFile:
+    description: 'Image list file.'
+    required: true
+  targetFile:
+    description: 'Target Deployment or ClusterServiceVersion file to update.'
+    required: true
+  deploymentName:
+    description: 'Target deployment name (required for CSV file).'
+    required: true
+  containerName:
+    description: 'Target container name.'
+    required: true
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    IMAGE_LIST_FILE: ${{ inputs.imageListFile }}
+    TARGET_FILE: ${{ inputs.targetFile }}
+    TARGET_DEPLOYMENT_NAME: ${{ inputs.deploymentName }}
+    TARGET_CONTAINER_NAME: ${{ inputs.containerName }}
