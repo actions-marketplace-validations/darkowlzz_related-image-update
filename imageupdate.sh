@@ -34,6 +34,7 @@ set -e
 # 	imageupdate.sh
 
 RELATED_IMAGE_PREFIX="RELATED_IMAGE"
+OPERATOR_IMAGE="OPERATOR_IMAGE"
 
 if [ -z "$IMAGE_LIST_FILE" ]; then
 	echo "Error: IMAGE_LIST_FILE must be set"
@@ -54,11 +55,14 @@ fi
 TOTAL_IMAGES=$(yq r $IMAGE_LIST_FILE --length)
 
 DEPLOYMENTS_PATH=""
+CSV_ANNOTATION_IMAGE_PATH="metadata.annotations.containerImage"
 
+KIND_CSV="ClusterServiceVersion"
+KIND_DEPLOYMENT="Deployment"
 KIND=$(yq r $TARGET_FILE kind)
 
 # If the file is a CSV config, get the Deployment path.
-if [ "$KIND" == "ClusterServiceVersion" ]; then
+if [ "$KIND" == "$KIND_CSV" ]; then
 	echo "Target file identified as a ClusterServiceVersion config."
 
 	# TODO: Check the number of deployments before failing. In case of a
@@ -87,7 +91,7 @@ if [ "$KIND" == "ClusterServiceVersion" ]; then
 	if [ ! $TARGET_DEPLOYMENT_FOUND ]; then
 		echo "Target deployment $TARGET_DEPLOYMENT_NAME not found"
 	fi
-elif [ "$KIND" == "Deployment" ]; then
+elif [ "$KIND" == "$KIND_DEPLOYMENT" ]; then
 	echo "Target file identified as a Deployment config."
 else
 	echo "Error: Unknown target config file. Must be Deployment or a ClusterServiceVersion config"
@@ -146,14 +150,32 @@ if [ -z $envVarsLeft ]; then
 	envVarsLeft=0
 fi
 
-# Add all the RELATED_IMAGEs from the image list and write as env vars.
-RELATED_IMAGE_INDEX=0
+# Add all the images from the image list.
+# For images with RELATED_IMAGE prefix, write as env vars.
+# For image with OPERATOR_IMAGE name, write the image as operator image.
+IMAGE_INDEX=0
 echo "Adding new related images env vars..."
 for ((l=$envVarsLeft; l<$(($envVarsLeft+$TOTAL_IMAGES)); l++)); do
-	# Read related image at the image index and write to env vars.
-	yq w -i $TARGET_FILE $ENVS_PATH[$l].name "$(yq r $IMAGE_LIST_FILE [$RELATED_IMAGE_INDEX].name)"
-	yq w -i $TARGET_FILE $ENVS_PATH[$l].value "$(yq r $IMAGE_LIST_FILE [$RELATED_IMAGE_INDEX].value)"
-	RELATED_IMAGE_INDEX=$(($RELATED_IMAGE_INDEX+1))
+	# Read image at the image index and write to target file.
+	KEY=$(yq r $IMAGE_LIST_FILE [$IMAGE_INDEX].name)
+	VAL=$(yq r $IMAGE_LIST_FILE [$IMAGE_INDEX].value)
+
+	# For related image, add env vars.
+	if [[ $KEY == $RELATED_IMAGE_PREFIX* ]]; then
+		yq w -i $TARGET_FILE $ENVS_PATH[$l].name "$KEY"
+		yq w -i $TARGET_FILE $ENVS_PATH[$l].value "$VAL"
+		IMAGE_INDEX=$(($IMAGE_INDEX+1))
+	fi
+
+	# For operator-image, add container image and metadata annotation if
+	# CSV.
+	if [[ $KEY == $OPERATOR_IMAGE* ]]; then
+		echo "Adding OPERATOR_IMAGE"
+		yq w -i $TARGET_FILE $CONTAINERS_PATH[$CONTAINER_INDEX].image $VAL
+		if [[ "$KIND" == "$KIND_CSV" ]] ; then
+			yq w -i $TARGET_FILE $CSV_ANNOTATION_IMAGE_PATH $VAL
+		fi
+	fi
 done
 
 echo "All env vars of the target container:"
