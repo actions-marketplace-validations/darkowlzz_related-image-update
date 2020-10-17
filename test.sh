@@ -12,16 +12,27 @@ SRC_DEPLOYMENT_WITH_ENV_VARS="testdata/config-existing-env-vars/manager/manager.
 TEST_DEPLOYMENT="testdata/deployment.yaml"
 
 TEST_IMAGE_LIST="testdata/imagelist-0.2.0.yaml"
+OPERATOR_IMAGE_NAME="registry.example.com/example/operator:v1.0.0"
 
 # Helper for printing error.
-echoerr() { printf "ERROR: %s\n" "$*" >&2; }
+echoerr() {
+	printf "ERROR: %s\n" "$*" >&2;
+	exit 1
+}
 
 # $1 - actual number of env vars
 # $2 - expected number of env vars
 check_env_vars_count () {
 	if [ $1 -ne $2 ]; then
 		echoerr "expected $2 env vars to exists, got $1"
-		exit 1
+	fi
+}
+
+# $1 - target file that's updated.
+# $2 - operator image.
+check_operator_image () {
+	if ! grep $2 $1 ; then
+		echoerr "expected $1 to contain \"$2\""
 	fi
 }
 
@@ -37,10 +48,12 @@ test_csv_update_no_env_vars () {
 
 	./imageupdate.sh
 
+	WANT_OPERATOR_IMAGE=$OPERATOR_IMAGE_NAME
 	WANT_ENV_VARS=4
 	envVarsCount=$(yq r $TARGET_FILE spec.install.spec.deployments[0].spec.template.spec.containers[0].env --length)
 
 	check_env_vars_count $envVarsCount $WANT_ENV_VARS
+	check_operator_image $TARGET_FILE $WANT_OPERATOR_IMAGE
 
 	# Cleanup.
 	rm $TEST_CSV
@@ -58,10 +71,12 @@ test_csv_update_with_env_vars () {
 
 	./imageupdate.sh
 
+	WANT_OPERATOR_IMAGE=$OPERATOR_IMAGE_NAME
 	WANT_ENV_VARS=6
 	envVarsCount=$(yq r $TARGET_FILE spec.install.spec.deployments[0].spec.template.spec.containers[0].env --length)
 
 	check_env_vars_count $envVarsCount $WANT_ENV_VARS
+	check_operator_image $TARGET_FILE $WANT_OPERATOR_IMAGE
 
 	# Cleanup.
 	rm $TEST_CSV
@@ -79,10 +94,12 @@ test_csv_update_with_multiple_deployments () {
 
 	./imageupdate.sh
 
+	WANT_OPERATOR_IMAGE=$OPERATOR_IMAGE_NAME
 	WANT_ENV_VARS=6
 	envVarsCount=$(yq r $TARGET_FILE spec.install.spec.deployments[0].spec.template.spec.containers[0].env --length)
 
 	check_env_vars_count $envVarsCount $WANT_ENV_VARS
+	check_operator_image $TARGET_FILE $WANT_OPERATOR_IMAGE
 
 	# Cleanup.
 	rm $TEST_CSV
@@ -100,10 +117,12 @@ test_deployment_update_no_env_vars () {
 
 	./imageupdate.sh
 
+	WANT_OPERATOR_IMAGE=$OPERATOR_IMAGE_NAME
 	WANT_ENV_VARS=4
 	envVarsCount=$(yq r $TARGET_FILE spec.template.spec.containers[0].env --length)
 
 	check_env_vars_count $envVarsCount $WANT_ENV_VARS
+	check_operator_image $TARGET_FILE $WANT_OPERATOR_IMAGE
 
 	# Cleanup.
 	rm $TEST_DEPLOYMENT
@@ -121,10 +140,12 @@ test_deployment_update_with_env_vars () {
 
 	./imageupdate.sh
 
+	WANT_OPERATOR_IMAGE=$OPERATOR_IMAGE_NAME
 	WANT_ENV_VARS=6
 	envVarsCount=$(yq r $TARGET_FILE spec.template.spec.containers[0].env --length)
 
 	check_env_vars_count $envVarsCount $WANT_ENV_VARS
+	check_operator_image $TARGET_FILE $WANT_OPERATOR_IMAGE
 
 	# Cleanup.
 	rm $TEST_DEPLOYMENT

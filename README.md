@@ -33,7 +33,15 @@ An example image list file:
   value: registry.example.com/example/helper-x:v1.0.1
 - name: RELATED_IMAGE_SCHEDULER
   value: registry.example.com/example/scheduler:v1.2.0
+- name: OPERATOR_IMAGE
+  value: registry.example.com/example/operator:v1.0.0
 ```
+
+As an additional feature, operator's image can also be updated. The image
+should be in the image list with name `OPERATOR_IMAGE`. For a Deployment
+config, it'll update the operator's container image and for a CSV config, it'll
+update the `metadata.annotations.containerImage` and the operator container
+image under Deployment.
 
 ## Usage
 

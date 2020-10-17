@@ -6,3 +6,5 @@
   value: registry.example.com/example/helper-x:v1.0.1
 - name: RELATED_IMAGE_SCHEDULER
   value: registry.example.com/example/scheduler:v1.2.0
+- name: OPERATOR_IMAGE
+  value: registry.example.com/example/operator:v1.0.0
